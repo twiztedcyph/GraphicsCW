@@ -34,6 +34,11 @@ void Activity::initialise()
 	// Initialise the activity at application start
 }
 
+void Activity::initStar()
+{
+
+}
+
 void Activity::shutdown()
 {
 	// Shutdown the activity at application close

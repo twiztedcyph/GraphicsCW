@@ -1,7 +1,3 @@
-//
-// The structure of the Graphics 1 OpenGL template is explained in README.txt
-//
-
 /*
 GameActivity implementation
 
@@ -11,7 +7,7 @@ The comments in the file Activity.cpp give a little more info about each method
 This activity is where the main game logic goes.
 Most of your game code will go here
 */
-
+#pragma comment(lib,"Strmiids.lib")
 // Header File For Windows
 #include <windows.h>
 
@@ -23,27 +19,17 @@ Most of your game code will go here
 
 //Image loading library.
 #include "SOIL.h"
-
+#include <dshow.h>
 // Needed to access member functions and variables from OpenGLApplication
 #include "OpenGLApplication.h"
 #include "GameActivity.h"
 #include "RandomGen.h"
 #include "Bullet.h"
-#include "PlayerProjectiles.h"
-#include "PlayerShip.h"
-#include "PlayerShipFlame.h"
-#include "StarField.h"
-#include "EnemyList.h"
-#include "CompShip.h"
 #include <iostream>
 #include <vector>
 #include <ctime>
 #include <cstdlib>
-#include "Asteroid.h"
-#include "EnemyProjectiles.h"
 #include <mmsystem.h>
-#include "Map.h"
-#include "CollectableList.h"
 
 //for cout and endl.
 using namespace std;
@@ -57,23 +43,10 @@ using namespace std;
 #define PLAYER_LEFT_BOUNDARY -5
 #define PLAYER_RIGHT_BOUNDARY 5
 
-//Initialise the bullet storage class for players and enemies.
-PlayerProjectiles bullets;
-
-CollectableList collectableList;
-
-//Initialise the player's ship.
-PlayerShip playerShip(11.2, -88.6);
-
-//Initialise the animated player's ship flame.
-PlayerShipFlame playerShipFlame;
-
-StarField starField(200, 80, 20, &playerShip);
-
-EnemyList enemyList;
-
-Map map;
-
+Hud hudOne;
+IGraphBuilder *pGraph = NULL;
+IMediaControl *pControl = NULL;
+IMediaEvent   *pEvent = NULL;
 
 GameActivity::GameActivity(OpenGLApplication *app)
 : Activity(app)		// Call super constructor
@@ -91,6 +64,10 @@ GameActivity::GameActivity(OpenGLApplication *app)
 */
 void GameActivity::initialise()
 {
+	pause = false;
+	screenWidth = 800;
+	screenHeight = 600;
+	starField = StarField(200, 80, 20, &playerShip);
 	//Seed the psuedo random number generator.
 	srand(time(0));
 	// Initialise the activity; called at application start up
@@ -141,23 +118,82 @@ void GameActivity::initialise()
 		SOIL_CREATE_NEW_ID,
 		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
 
+	ammoTextID = SOIL_load_OGL_texture("sprites/Ammo_text.png",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
+
+	hpTextID = SOIL_load_OGL_texture("sprites/hp_text.png",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
+
+	livesTextID = SOIL_load_OGL_texture("sprites/lives_text.png",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
+
+	playerShip = PlayerShip(11.2, -88.6);
+
 	playerShipFlame.setImage(&flameTextureID);
 	playerShip.setImages(&playerTextureID, &playerHitTextureID);
-	//Initialise the star fields.
-	starField.initialise();
+	
 	//Set the enemyBullet texture.
-	enemyList.setEnemyBulletTexture(&ebulletTextureID, &explosionTextureID);
+	enemyList.setEnemyBulletTexture(&ebulletTextureID, &explosionTextureID, &enemyTextureID);
+	enemyList.setCollectableList(&collectableList, &collectableTextureID);
 	enemyList.setAsteroidList(&map);
 
 	playerShip.setEnemyList(&enemyList);
 	playerShip.setCollectableList(&collectableList);
-	//PlaySound("sounds/bgOne.wav", NULL, SND_ASYNC);
+
 	map = Map(0, 20, &enemyList, &collectableList, &asteroidTextureID, &enemyTextureID, &collectableTextureID);
-	map.makeField();
+	map.makeFieldOne();
 	playerShip.setAsteroidList(&map);
-	
+	hudOne.init(ammoTextID, hpTextID, livesTextID, playerHitTextureID, bulletTextureID, collectableTextureID);
+	hudOne.setPlayer(playerShip);
+
+	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+	{
+		printf("ERROR - Could not initialize COM library");
+		return;
+	}
+
+	// Create the filter graph manager and query for interfaces.
+	hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
+		IID_IGraphBuilder, (void **)&pGraph);
+	if (FAILED(hr))
+	{
+		printf("ERROR - Could not create the Filter Graph Manager.");
+		return;
+	}
+
+	hr = pGraph->QueryInterface(IID_IMediaControl, (void **)&pControl);
+	hr = pGraph->QueryInterface(IID_IMediaEvent, (void **)&pEvent);
+
+	// Build the graph. IMPORTANT: Change this string to a file on your system.
+	hr = pGraph->RenderFile(L"Sounds/bgOne.wav", NULL);
+	if (SUCCEEDED(hr))
+	{
+		// Run the graph.
+		hr = pControl->Run();
+		if (SUCCEEDED(hr))
+		{
+			// Wait for completion.
+			long evCode;
+			pEvent->WaitForCompletion(0, &evCode);
+
+			// Note: Do not use INFINITE in a real application, because it
+			// can block indefinitely.
+		}
+	}
 }
 
+void GameActivity::initStar()
+{
+	//Initialise the star fields.
+	starField.initialise(playerShip.getPlayerX(), playerShip.getPlayerY());
+}
 
 void GameActivity::shutdown()
 {
@@ -169,6 +205,9 @@ void GameActivity::shutdown()
 	glDeleteTextures(1, &asteroidTextureID);
 	glDeleteTextures(1, &enemyTextureID);
 	glDeleteTextures(1, &explosionTextureID);
+	glDeleteTextures(1, &asteroidTextureID);
+	glDeleteTextures(1, &collectableTextureID);
+	hudOne.shutDown();
 }
 
 
@@ -177,13 +216,20 @@ void GameActivity::onSwitchIn()
 {
 	//Set the clear colour to black.
 	glClearColor(0.0, 0.0, 0.0, 0.0);
+	//Initialise the star fields.
+	initStar();
+}
 
+void GameActivity::onSwitchOut()
+{
+	app->gameOne->shutdown();
 }
 
 void GameActivity::onReshape(int width, int height)
 {
 	// If you need to do anything when the screen is resized, do it here
-
+	screenWidth = width;
+	screenHeight = height;
 	// EXAMPLE CODE
 	glViewport(0, 0, width, height);						// Reset The Current Viewport
 
@@ -201,108 +247,113 @@ void GameActivity::onReshape(int width, int height)
 
 void GameActivity::update(double deltaT, double prevDeltaT)
 {
-	// Update the application; if the current frame is frame number F, then the previous frame is F-1 and the one before that is F-2
-	// deltaT is the time elapsed from frame F-1 to frame F, prevDeltaT is the time elapsed from F-2 to F-1
-
-	// Update the simulation here
-	// TRY NOT TO DO ANY RENDERING HERE
-	// step the simulation forward by the amount of time specified by deltaT
-	//
-	// If you need to do different things depending on whether or not keys are pressed, etc,
-	// get the member variable inputState and use its isKeyPressed(), getMouseX(), getMouseY() and isMouseButtonPressed() methods
-	// to determine the state of the keys
-	collectableList.removeCollectable();
-	enemyList.remove();
-	//Remove bullets off the screen from the bullet vector.
-	bullets.remove(camY);
-
-	//Update the player ship.
-	playerShip.playerUpdate(deltaT);
-	
-	//Flame update
-	playerShipFlame.updateFrame(deltaT, playerShip.getPlayerX(), playerShip.getPlayerY(), playerShip.getPlayerRot());
-	
-	//Update the camera y axis.
-	camY = playerShip.getPlayerY();
-	camX = playerShip.getPlayerX();
-	
-	//Update all bullets.
-	bullets.updateAllBullets(deltaT);
-	
-	//Star updates. These will be separated out at some stage.
-	starField.updateAll(camY, camX);
-	starField.move(deltaT);
-	collectableList.updateAllCollectables(deltaT);
-	enemyList.checkCollisions(bullets);
-	enemyList.updateAllEnemies(playerShip.getPlayerX(), playerShip.getPlayerY(), deltaT);
-	map.updateField(deltaT);
-
-	if (enemyList.getSize() < 0)
+	if (!pause)
 	{
-		enemyList.spawnNewRandom(playerShip.getPlayerX(), playerShip.getPlayerY(), &enemyTextureID);
-	}
-
-	//Camera behaviour based on player's current position.
-	if (playerShip.getPlayerX() < -5 && playerShip.getPlayerX() > -20)
-	{
-		if (camX > -5)
+		if (playerShip.getPlayerLives() <= 0)
 		{
-			camX -= CAMERA_MOVEMENT_SPEED * deltaT;			
+			app->setCurrentActivity(app->endScreen);
 		}
-	}
-	else if (playerShip.getPlayerX() > 5 && playerShip.getPlayerX() < 20)
-	{
-		if (camX < 5)
+		if (playerShip.completedLevelOne())
+		{
+			playerShip.setPlayerPos(13.3, -208.6);
+			app->setCurrentActivity(app->levelOneComplete);
+		}
+		
+		hudOne.updateHud(deltaT);
+
+		collectableList.removeCollectable();
+		enemyList.remove();
+		//Remove bullets off the screen from the bullet vector.
+		bullets.remove(camY);
+
+		//Update the player ship.
+		playerShip.playerUpdate(deltaT);
+
+		//Flame update
+		playerShipFlame.updateFrame(deltaT, playerShip.getPlayerX(), playerShip.getPlayerY(), playerShip.getPlayerRot());
+
+		//Update the camera y axis.
+		camY = playerShip.getPlayerY();
+		camX = playerShip.getPlayerX();
+
+		//Update all bullets.
+		bullets.updateAllBullets(deltaT);
+
+		//Star updates. These will be separated out at some stage.
+		starField.updateAll(camY, camX);
+		starField.move(deltaT);
+		collectableList.updateAllCollectables(deltaT);
+		enemyList.checkCollisions(bullets);
+		enemyList.updateAllEnemies(playerShip.getPlayerX(), playerShip.getPlayerY(), deltaT);
+		map.updateField(deltaT);
+		hudOne.updateHud(app->getAspectRatio());
+		if (enemyList.getSize() < 0)
+		{
+			enemyList.spawnNewRandom(playerShip.getPlayerX(), playerShip.getPlayerY(), &enemyTextureID);
+		}
+
+		//Camera behaviour based on player's current position.
+		if (playerShip.getPlayerX() < -5 && playerShip.getPlayerX() > -20)
+		{
+			if (camX > -5)
+			{
+				camX -= CAMERA_MOVEMENT_SPEED * deltaT;
+			}
+		}
+		else if (playerShip.getPlayerX() > 5 && playerShip.getPlayerX() < 20)
+		{
+			if (camX < 5)
+			{
+				camX += CAMERA_MOVEMENT_SPEED * deltaT;
+			}
+		}
+		else if (playerShip.getPlayerX() >= -15 && playerShip.getPlayerX() <= 15)
+		{
+			if (camX < 0)
+			{
+				camX = playerShip.getPlayerX();
+			}
+			if (camX > 0)
+			{
+				camX = playerShip.getPlayerX();
+			}
+		}
+
+		/*Manual camera control here.  This will not be available in the main game.*/
+		if (inputState->isKeyPressed(VK_LEFT))
+		{
+			camX -= CAMERA_MOVEMENT_SPEED * deltaT;
+		}
+		if (inputState->isKeyPressed(VK_RIGHT))
 		{
 			camX += CAMERA_MOVEMENT_SPEED * deltaT;
 		}
-	}
-	else if (playerShip.getPlayerX() >= -15 && playerShip.getPlayerX() <= 15)
-	{
-		if (camX < 0)
+		if (inputState->isKeyPressed(VK_UP))
 		{
-			camX = playerShip.getPlayerX();
+
 		}
-		if (camX > 0)
+		if (inputState->isKeyPressed(VK_DOWN))
 		{
-			camX = playerShip.getPlayerX();
+			camY -= CAMERA_MOVEMENT_SPEED * deltaT;
 		}
-	}
 
-	/*Manual camera control here.  This will not be available in the main game.*/
-	if (inputState->isKeyPressed(VK_LEFT))
-	{
-		camX -= CAMERA_MOVEMENT_SPEED * deltaT;
-	}
-	if (inputState->isKeyPressed(VK_RIGHT))
-	{
-		camX += CAMERA_MOVEMENT_SPEED * deltaT;
-	}
-	if (inputState->isKeyPressed(VK_UP))
-	{
-		
-	}
-	if (inputState->isKeyPressed(VK_DOWN))
-	{
-		camY -= CAMERA_MOVEMENT_SPEED * deltaT;
-	}
-
-	// WASD player control.
-	if (inputState->isKeyPressed('A'))
-	{
-		playerShip.playerRotateLeft(deltaT);
-	}
-	if (inputState->isKeyPressed('D'))
-	{
-		playerShip.playerRotateRight(deltaT);
-	}
-	if (inputState->isKeyPressed('W'))
-	{
-		playerShip.playerSpeedUp(deltaT);
-	}
-	if (inputState->isKeyPressed('S'))
-	{
-		playerShip.playerSpeedDown(deltaT);
+		// WASD player control.
+		if (inputState->isKeyPressed('A'))
+		{
+			playerShip.playerRotateLeft(deltaT);
+		}
+		if (inputState->isKeyPressed('D'))
+		{
+			playerShip.playerRotateRight(deltaT);
+		}
+		if (inputState->isKeyPressed('W'))
+		{
+			playerShip.playerSpeedUp(deltaT);
+		}
+		if (inputState->isKeyPressed('S'))
+		{
+			playerShip.playerSpeedDown(deltaT);
+		}
 	}
 }
 
@@ -367,6 +418,8 @@ void GameActivity::render()
 	}
 
 	enemyList.drawAllEnemies();
+	
+	hudOne.renderHud();
 
 	glFlush();
 	glFinish();
@@ -381,14 +434,14 @@ void GameActivity::onMouseDown(int button, int mouseX, int mouseY)
 	// mouseX and mouseY: position
 	if (button == 2)
 	{
-		CompShip newEnemy(0, playerShip.getPlayerY() + 23, &enemyTextureID);
-		enemyList.addNewEnemy(newEnemy);
+		
 	}
-	if (button == 0 && playerShip.isReadyToFire())
+	if (button == 0 && playerShip.isReadyToFire() && playerShip.ammoLeft > 0)
 	{
+		playerShip.ammoLeft--;
 		Bullet b(playerShip.getPlayerX(), playerShip.getPlayerY(), playerShip.getPlayerRot(), &bulletTextureID);
 		bullets.add(b);
-		PlaySound("sounds/laserShoot.wav", NULL, SND_ASYNC);
+		PlaySound((LPCSTR) "Sounds/laserShoot.WAV", NULL, SND_FILENAME | SND_ASYNC);
 	}
 }
 
@@ -425,8 +478,26 @@ void GameActivity::onKeyUp(int key)  // Called when key released
 		// F1; switch to end screen activity
 		app->setCurrentActivity(app->endScreen);
 	}
+
+	if (key == VK_F3)
+	{
+		app->gameTwo->initialise();
+		app->setCurrentActivity(app->gameTwo);
+	}
+
 	if (key == VK_SPACE)
 	{
 		cout << playerShip.getPlayerX() << "\t" << playerShip.getPlayerY() << endl;
+	}
+	if (key == VK_F2)
+	{
+		if (pause)
+		{
+			pause = false;
+		}
+		else
+		{
+			pause = true;
+		}
 	}
 }

@@ -5,6 +5,7 @@
 class CollectableList
 {
 public:
+	int oldSize;
 	std::vector<Collectable> collectableList;
 
 	CollectableList();

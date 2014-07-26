@@ -28,43 +28,108 @@ StarField::StarField(int sml, int med, int lrg, PlayerShip* player)
 	this->playerRef = player;
 }
 
+StarField::StarField()
+{
+	this->smallCount = 0;
+	this->mediumCount = 0;
+	this->largeCount = 0;
+	this->playerRef = nullptr;
+}
+
 StarField::~StarField(){}
+
+void StarField::clear()
+{
+	starField.clear();
+}
 
 void StarField::initialise()
 {
-	for (int i = 0; i < smallCount; i++)
+	if (starField.empty())
 	{
-		if (i < mediumCount)
+		for (int i = 0; i < smallCount; i++)
 		{
-			Star star(RandomGen().getRand(playerRef->getPlayerX() + 30, 
-				playerRef->getPlayerX() - 30),
-				RandomGen().getRand(playerRef->getPlayerY() + 18, 
-				playerRef->getPlayerY() - 18),
-				MED_STAR_PARALLAX_SPEED,
-				MED_STAR_PARALLAX_SPEED,
-				MED_STAR_BRIGHTNESS);
-			starField.push_back(star);
-		}
-		if (i < largeCount)
-		{
-			Star star(RandomGen().getRand(playerRef->getPlayerX() + 30,
+			if (i < mediumCount)
+			{
+				Star star(RandomGen().getRand(playerRef->getPlayerX() + 30,
 					playerRef->getPlayerX() - 30),
-				RandomGen().getRand(playerRef->getPlayerY() + 18,
+					RandomGen().getRand(playerRef->getPlayerY() + 18,
 					playerRef->getPlayerY() - 18),
-				LARGE_STAR_PARALLAX_SPEED,
-				LARGE_STAR_PARALLAX_SPEED,
-				HIGH_STAR_BRIGHTNESS);
+					MED_STAR_PARALLAX_SPEED,
+					MED_STAR_PARALLAX_SPEED,
+					MED_STAR_BRIGHTNESS);
+				starField.push_back(star);
+			}
+			if (i < largeCount)
+			{
+				Star star(RandomGen().getRand(playerRef->getPlayerX() + 30,
+					playerRef->getPlayerX() - 30),
+					RandomGen().getRand(playerRef->getPlayerY() + 18,
+					playerRef->getPlayerY() - 18),
+					LARGE_STAR_PARALLAX_SPEED,
+					LARGE_STAR_PARALLAX_SPEED,
+					HIGH_STAR_BRIGHTNESS);
+				starField.push_back(star);
+			}
+			Star star(RandomGen().getRand(playerRef->getPlayerX() + 30,
+				playerRef->getPlayerX() - 30),
+				RandomGen().getRand(playerRef->getPlayerY() + 18,
+				playerRef->getPlayerY() - 18),
+				SMALL_STAR_PARALLAX_SPEED,
+				SMALL_STAR_PARALLAX_SPEED,
+				LOW_STAR_BRIGHTNESS);
 			starField.push_back(star);
 		}
-		Star star(RandomGen().getRand(playerRef->getPlayerX() + 30,
-				playerRef->getPlayerX() - 30),
-			RandomGen().getRand(playerRef->getPlayerY() + 18,
-				playerRef->getPlayerY() - 18),
-			SMALL_STAR_PARALLAX_SPEED, 
-			SMALL_STAR_PARALLAX_SPEED,
-			LOW_STAR_BRIGHTNESS);
-		
-		starField.push_back(star);
+	}
+	else
+	{
+		starField.clear();
+		initialise();
+	}
+}
+
+void StarField::initialise(double xPos, double yPos)
+{
+	if (starField.empty())
+	{
+		for (int i = 0; i < smallCount; i++)
+		{
+			if (i < mediumCount)
+			{
+				Star star(RandomGen().getRand(xPos + 30,
+					xPos - 30),
+					RandomGen().getRand(yPos + 18,
+					yPos - 18),
+					MED_STAR_PARALLAX_SPEED,
+					MED_STAR_PARALLAX_SPEED,
+					MED_STAR_BRIGHTNESS);
+				starField.push_back(star);
+			}
+			if (i < largeCount)
+			{
+				Star star(RandomGen().getRand(xPos + 30,
+					xPos - 30),
+					RandomGen().getRand(yPos + 18,
+					yPos - 18),
+					LARGE_STAR_PARALLAX_SPEED,
+					LARGE_STAR_PARALLAX_SPEED,
+					HIGH_STAR_BRIGHTNESS);
+				starField.push_back(star);
+			}
+			Star star(RandomGen().getRand(xPos + 30,
+				xPos - 30),
+				RandomGen().getRand(yPos + 18,
+				yPos - 18),
+				SMALL_STAR_PARALLAX_SPEED,
+				SMALL_STAR_PARALLAX_SPEED,
+				LOW_STAR_BRIGHTNESS);
+			starField.push_back(star);
+		}
+	}
+	else
+	{
+		starField.clear();
+		initialise();
 	}
 }
 

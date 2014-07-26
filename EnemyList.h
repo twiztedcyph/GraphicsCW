@@ -4,27 +4,33 @@
 #include "EnemyProjectiles.h"
 #include "Map.h"
 #include "ExplosionList.h"
-
+#include "CollectableList.h"
+#include "Collectable.h"
 
 class EnemyList
 {
 private:
 	GLuint* enemyBulletTextureID;
 	GLuint* explosionTextureID;
+	GLuint* enemyTextureID;
+	GLuint* collectableTextureID;
+	CollectableList* collectableList;
 	std::vector<CompShip> enemyList;
 	EnemyProjectiles enemyBullets;
 	Point minTransDist;
 	Map* asteroidMapListRef;
 	ExplosionList explosionList;
+	double playerShipX, playerShipY;
 public:
 	EnemyList();
-	~EnemyList();
 
 	int getSize();
 	
 	void addNewEnemy(CompShip newEnemy);
 
-	void setEnemyBulletTexture(GLuint* enemyBulletTextureID, GLuint* explosionTextureID);
+	void setEnemyBulletTexture(GLuint* BulletTextureID, GLuint* explosionTextureID, GLuint* enemyTextureID);
+
+	void setCollectableList(CollectableList* collectableList, GLuint* collectableTextureID);
 
 	void spawnNewRandom(double playerY, double playerX, GLuint* enemyTextureID);
 

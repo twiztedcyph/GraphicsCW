@@ -3,6 +3,8 @@
 #include "Collision.h"
 #include "BoundingQuad.h"
 #include "Point.h"
+#include <iostream>
+#include <math.h>
 
 
 Collision::Collision()
@@ -15,12 +17,12 @@ Collision::~Collision()
 }
 
 
-bool Collision::checkCollision(BoundingQuad* boxOne, Point* point, double radius)
+bool Collision::checkCollision(BoundingQuad& boxOne, Point& point, double radius)
 {
-	for (size_t i = 0; i < boxOne->getSize(); i++)
+	for (size_t i = 0; i < boxOne.getSize(); i++)
 	{
-		double xDif = boxOne->pointsN[i].pointX - point->pointX;
-		double yDif = boxOne->pointsN[i].pointY - point->pointY;
+		double xDif = boxOne.pointsN[i].pointX - point.pointX;
+		double yDif = boxOne.pointsN[i].pointY - point.pointY;
 		if ((radius * radius) >= ((xDif * xDif) + (yDif * yDif)) + 0.2)
 		{
 			return true;
@@ -30,10 +32,10 @@ bool Collision::checkCollision(BoundingQuad* boxOne, Point* point, double radius
 	return false;
 }
 
-bool Collision::checkCollision(Point* pointOne, double radiusOne, Point* pointTwo, double radiusTwo)
+bool Collision::checkCollision(Point& pointOne, double radiusOne, Point& pointTwo, double radiusTwo)
 {
-	double xDiff = pointTwo->pointX - pointOne->pointX;
-	double yDiff = pointTwo->pointY - pointOne->pointY;
+	double xDiff = pointTwo.pointX - pointOne.pointX;
+	double yDiff = pointTwo.pointY - pointOne.pointY;
 	double tRadius = radiusOne + radiusTwo;
 
 	if ((tRadius * tRadius) >= (xDiff * xDiff) + (yDiff * yDiff))
@@ -45,21 +47,14 @@ bool Collision::checkCollision(Point* pointOne, double radiusOne, Point* pointTw
 
 bool Collision::hasLineOfSight(Point& lineStart, Point& lineEnd, BoundingQuad& lineBox, BoundingQuad& wallBox, Point& wallPoint ,double checkDistanceSquared)
 {
-	double xDiff = lineStart.pointX - wallPoint.pointX;
-	double yDiff = lineStart.pointY - wallPoint.pointY;
-	double distOne = (xDiff * xDiff) + (yDiff * yDiff);
-
-	xDiff = lineEnd.pointX - wallPoint.pointX;
-	yDiff = lineEnd.pointY - wallPoint.pointY;
-	double distTwo = (xDiff * xDiff) + (yDiff * yDiff);
-
-
-	if (distOne < checkDistanceSquared || distTwo < checkDistanceSquared)
-	{
-		Point axisA = lineBox.pointsN[0].getEdgeNormal(&lineBox.pointsN[2]);
-		if (foundSepAxis(axisA, lineBox, wallBox))
+	
+		for (unsigned int i = 0, j = lineBox.getSize() - 1; i < lineBox.getSize(); j = i, i++)
 		{
-			return true;
+			Point axisA = lineBox.pointsN[i].getEdgeNormal(&lineBox.pointsN[j]);
+			if (foundSepAxis(axisA, lineBox, wallBox))
+			{
+				return true;
+			}
 		}
 
 		for (unsigned int i = 0, j = wallBox.getSize() - 1; i < wallBox.getSize(); j = i, i++)
@@ -70,11 +65,11 @@ bool Collision::hasLineOfSight(Point& lineStart, Point& lineEnd, BoundingQuad& l
 				return true;
 			}
 		}
-	}
-	return false;
+		return false;
+	
 }
 
-void Collision::getMinMax(Point axis, BoundingQuad box, double& min, double& max)
+void Collision::getMinMax(Point axis, BoundingQuad &box, double& min, double& max)
 {
 	double dotProd = axis.getDotProd(&box.pointsN[0]);
 
@@ -94,7 +89,7 @@ void Collision::getMinMax(Point axis, BoundingQuad box, double& min, double& max
 	}
 }
 
-bool Collision::foundSepAxis(Point& axis, BoundingQuad boxA, BoundingQuad boxB)
+bool Collision::foundSepAxis(Point& axis, BoundingQuad &boxA, BoundingQuad &boxB)
 {
 	double boxAMin, boxBMin, boxAMax, boxBMax;
 
@@ -126,7 +121,7 @@ bool Collision::foundSepAxis(Point& axis, BoundingQuad boxA, BoundingQuad boxB)
 	return false;
 }
 
-bool Collision::isIntersect(BoundingQuad boxA, Point aPos, BoundingQuad boxB, Point bPos, double checkDistanceSquared, Point& minTransVec)
+bool Collision::isIntersect(BoundingQuad &boxA, Point aPos, BoundingQuad &boxB, Point bPos, double checkDistanceSquared, Point& minTransVec)
 {
 	double xDiff = aPos.pointX - bPos.pointX;
 	double yDiff = aPos.pointY - bPos.pointY;
@@ -176,7 +171,11 @@ bool Collision::isIntersect(BoundingQuad boxA, Point aPos, BoundingQuad boxB, Po
 	return false;
 }
 
-bool Collision::isIntersect(BoundingQuad boxA, Point aPos, BoundingQuad boxB, Point bPos, Point& minTransVec)
+bool Collision::isIntersect(BoundingQuad &boxA, 
+	Point& aPos, 
+	BoundingQuad &boxB, 
+	Point& bPos, 
+	Point& minTransVec)
 {
 	Point points[32];
 	int numOfAxis = 0;

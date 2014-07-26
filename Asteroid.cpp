@@ -18,9 +18,9 @@ Asteroid::Asteroid(double roidX, double roidY, GLuint* asteroidTextureID)
 {
 	this->roidX = roidX;
 	this->roidY = roidY;
-	this->dx = 1;
-	this->dy = 1;
-	this->roidSpeed = 5;
+	this->dx = 0;
+	this->dy = 0;
+	this->roidSpeed = 0;
 	this->roidRot = 0;
 	this->animate = false;
 	this->asteroidTextureID = asteroidTextureID;
@@ -37,8 +37,27 @@ Asteroid::Asteroid(double roidX, double roidY, GLuint* asteroidTextureID)
 	box.pointsN[3].setPoint(-2.5, 2.5);
 }
 
-Asteroid::~Asteroid()
+Asteroid::Asteroid(double roidX, double roidY, double roidSpeed, GLuint* asteroidTextureID)
 {
+	this->roidX = roidX;
+	this->roidY = roidY;
+	this->dx = 0;
+	this->dy = -1;
+	this->roidSpeed = roidSpeed;
+	this->roidRot = 1;
+	this->animate = false;
+	this->asteroidTextureID = asteroidTextureID;
+	freq = 0;
+	xPos = 0;
+	yPos = 3;
+	box.points[0].setPoint(-2.5, -2.5);
+	box.points[1].setPoint(2.5, -2.5);
+	box.points[2].setPoint(2.5, 2.5);
+	box.points[3].setPoint(-2.5, 2.5);
+	box.pointsN[0].setPoint(-2.5, -2.5);
+	box.pointsN[1].setPoint(2.5, -2.5);
+	box.pointsN[2].setPoint(2.5, 2.5);
+	box.pointsN[3].setPoint(-2.5, 2.5);
 }
 
 void Asteroid::setAnimate(bool animate)
@@ -74,7 +93,16 @@ double Asteroid::getRoidY()
 
 void Asteroid::updateRoid(double deltaT)
 {
-	//roidRot += 0.1 * deltaT;
+	if (roidSpeed > 0 && roidY > -228)
+	{
+		roidX += dx * roidSpeed * deltaT;
+		roidY += dy * roidSpeed * deltaT;
+		roidRot += deltaT * roidSpeed;
+	}
+	else if (roidSpeed > 0 && roidY <= -228)
+	{
+		roidY = 18;
+	}
 }
 
 void Asteroid::drawRoid()
@@ -87,7 +115,6 @@ void Asteroid::drawRoid()
 	// Move the player to the required position
 	//glTranslatef(playerX, playerY, 0.0);
 	MyTranslate().makeTranslateMatrix(this->roidX, this->roidY, a_tMatrix);
-
 	//glRotatef(playerRotation, 0.0, 0.0, 1.0);
 	MyTranslate().makeRotateMatrix(roidRot, a_rMatrix);
 

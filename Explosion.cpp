@@ -11,9 +11,10 @@ Explosion::Explosion()
 	this->yFrame = 1.0 / 6;
 	this->xFrameCount = 0;
 	this->yFrameCount = 5;
+	this->scale = 1;
 }
 
-Explosion::Explosion(double exploX, double exploY, GLuint* explosionTextureID)
+Explosion::Explosion(double exploX, double exploY, double scale, GLuint* explosionTextureID)
 {
 	this->explosionX = exploX;
 	this->explosionY = exploY;
@@ -23,6 +24,7 @@ Explosion::Explosion(double exploX, double exploY, GLuint* explosionTextureID)
 	this->xFrameCount = 0;
 	this->yFrameCount = 2;
 	this->finished = false;
+	this->scale = scale;
 	std::cout << this->xFrameCount << "\t" << yFrameCount << "\t" << this->explosionX << "\t" << explosionY << std::endl;
 	this->explosionTextureID = *explosionTextureID;
 	std::cout << this->explosionTextureID << std::endl;
@@ -34,14 +36,20 @@ Explosion::~Explosion()
 {
 }
 
-void Explosion::setExplosion(double exploX, double exploY, GLuint* explosionTextureID)
+void Explosion::setExplosion(double exploX, double exploY, double scale, GLuint* explosionTextureID)
 {
 
 	this->explosionX = exploX;
 	this->explosionY = exploY;
+	this->scale = scale;
 	std::cout << "F count " <<this->xFrameCount << "\t" << yFrameCount << std::endl;
 	this->explosionTextureID = *explosionTextureID;
 	std::cout << this->explosionTextureID << std::endl;
+}
+
+void Explosion::setExplosionTexture(GLuint* explosionTextureID)
+{
+	this->explosionTextureID = *explosionTextureID;
 }
 
 void Explosion::updateExplosion(double deltaT)
@@ -64,7 +72,6 @@ void Explosion::updateExplosion(double deltaT)
 
 void Explosion::drawExplosion()
 {
-	std::cout << "DRAWING EXPLOSION" << std::endl;
 	glPushMatrix();
 
 	glEnable(GL_BLEND);
@@ -84,16 +91,16 @@ void Explosion::drawExplosion()
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glTexCoord2f(0 + (xFrameCount * xFrame), 0 + (yFrameCount * yFrame));
-	glVertex2f(-1.5, -1.5);
+	glVertex2f(-1.5 * scale, -1.5 * scale);
 
 	glTexCoord2f(xFrame + (xFrameCount * xFrame), 0 + (yFrameCount * yFrame));
-	glVertex2f(1.5, -1.5);
+	glVertex2f(1.5 * scale, -1.5 * scale);
 
 	glTexCoord2f(xFrame + (xFrameCount * xFrame), yFrame + (yFrameCount * yFrame));
-	glVertex2f(1.5, 1.5);
+	glVertex2f(1.5 * scale, 1.5 * scale);
 
 	glTexCoord2f(0 + (xFrameCount * xFrame), yFrame + (yFrameCount * yFrame));
-	glVertex2f(-1.5, 1.5);
+	glVertex2f(-1.5 * scale, 1.5 * scale);
 
 	glEnd();
 

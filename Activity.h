@@ -39,6 +39,7 @@ public:
 	*
 	*/
 	virtual void initialise();											// Initialise the activity at application start
+	virtual void initStar();
 	virtual void shutdown();											// Shutdown the activity at application close
 
 	virtual void onSwitchIn();											// Activity switch in; called when the activity changes and this one switches in

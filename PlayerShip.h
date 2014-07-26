@@ -17,17 +17,19 @@ private:
 	GLuint* playerHitTextureID;
 	GLuint drawTexture;
 	bool gotHit;
-	double flash;
-	int flashCount, shipHP, collected, killed;
+	double flash, shipHP;
+	int flashCount, killed, lives;
 	EnemyList* enemyShipListRef;
 	EnemyProjectiles* enemyBullets;
 	CollectableList* collectableList;
 	Point playerMinTransDist, bulletMinTransDist;
 	Map* asteroidMapListRef;
 public:
+	int collected;
 	double dx, dy;
 	PlayerShip();
 	PlayerShip(double x, double y);
+	int ammoLeft;
 	~PlayerShip();
 
 	void setImages(GLuint* playerTextureID, GLuint* playerHitTextureID);
@@ -37,6 +39,8 @@ public:
 	void setEnemyBullets(EnemyProjectiles* enemyBullets);
 
 	void setEnemyList(EnemyList* enemyShipListRef);
+
+	void setPlayerPos(double xPos, double yPos);
 
 	void setAsteroidList(Map* asteroidMapListRef);
 
@@ -58,13 +62,23 @@ public:
 
 	void playerRotateRight(double deltaT);
 
+	void playerMoveLeft(double deltaT);
+
+	void playerMoveRight(double deltaT);
+
 	void showHit(double deltaT);
 
 	void incrementKill();
+
+	bool completedLevelOne();
+	bool completedLevelTwo();
+	bool completedLevelThree();
 
 	double getPlayerX();
 	double getPlayerY();
 	double getPlayerRot();
 	double getPlayerSpeed();
+	double getPlayerHP();
+	int getPlayerLives();
 };
 

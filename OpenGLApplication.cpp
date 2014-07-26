@@ -10,10 +10,14 @@
 
 #include "StartScreenActivity.h"
 #include "GameActivity.h"
+#include "GameActivityTwo.h"
+#include "GameActivityThree.h"
 #include "EndScreenActivity.h"
-
+#include "InstructionActivity.h"
 #include "OpenGLApplication.h"
-
+#include "LevelOneComplete.h"
+#include "LevelTwoComplete.h"
+#include "LevelThreeComplete.h"
 
 OpenGLApplication::OpenGLApplication()
 {
@@ -84,13 +88,23 @@ void OpenGLApplication::setCurrentActivity(Activity *a)
 void OpenGLApplication::initialise()
 {
 	startScreen = new StartScreenActivity(this);
-	game = new GameActivity(this);
+	instructionScreen = new InstructionActivity(this);
+	gameOne = new GameActivity(this);
+	gameTwo = new GameActivityTwo(this);
+	gameThree = new GameActivityThree(this);
 	endScreen = new EndScreenActivity(this);
+	levelOneComplete = new LevelOneComplete(this);
+	levelTwoComplete = new LevelTwoComplete(this);
+	levelThreeComplete = new LevelThreeComplete(this);
 
 	startScreen->initialise();
-	game->initialise();
+	instructionScreen->initialise();
+	levelOneComplete->initialise();
+	levelTwoComplete->initialise();
+	levelThreeComplete->initialise();
+	gameOne->initialise();
+	
 	endScreen->initialise();
-
 	setCurrentActivity(startScreen);
 }
 
@@ -98,19 +112,61 @@ void OpenGLApplication::initialise()
 void OpenGLApplication::shutdown()
 {
 	startScreen->shutdown();
-	game->shutdown();
+	levelOneComplete->shutdown();
+	levelTwoComplete->shutdown();
+	levelThreeComplete->shutdown();
+	gameOne->shutdown();
+	gameTwo->shutdown();
+	gameThree->shutdown();
 	endScreen->shutdown();
 
 	delete startScreen;
-	delete game;
+	delete levelOneComplete;
+	delete levelTwoComplete;
+	delete levelThreeComplete;
+	delete instructionScreen;
+	delete gameOne;
+	delete gameTwo;
+	delete gameThree;
 	delete endScreen;
 
 	startScreen = NULL;
-	game = NULL;
+	levelOneComplete = NULL;
+	levelTwoComplete = NULL;
+	levelThreeComplete = NULL;
+	instructionScreen = NULL;
+	gameOne = NULL;
+	gameTwo = NULL;
+	gameThree = NULL;
 	endScreen = NULL;
 }
 
+void OpenGLApplication::closeOne()
+{
+	gameOne->shutdown();
+	delete gameOne;
+	gameOne = NULL;
 
+	gameOne = new GameActivity(this);
+}
+
+void OpenGLApplication::closeTwo()
+{
+	gameTwo->shutdown();
+	delete gameTwo;
+	gameTwo = NULL;
+
+	gameTwo = new GameActivityTwo(this);
+}
+
+void OpenGLApplication::closeThree()
+{
+	gameThree->shutdown();
+	delete gameThree;
+	gameThree = NULL;
+
+	gameThree = new GameActivityThree(this);
+}
 
 void OpenGLApplication::finish()
 {

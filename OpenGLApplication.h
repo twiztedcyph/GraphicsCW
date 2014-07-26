@@ -25,8 +25,8 @@ private:
 	bool finished;
 
 public:
-	Activity *startScreen, *game, *endScreen;
-
+	Activity *startScreen, *gameOne, *gameTwo, *gameThree, *endScreen, *instructionScreen;
+	Activity *levelOneComplete, *levelTwoComplete, *levelThreeComplete;
 public:
 	OpenGLApplication();
 
@@ -47,6 +47,11 @@ public:
 	// Initialise/shutdown application
 	void initialise();
 	void shutdown();
+
+	void restartGame();
+	void closeOne();
+	void closeTwo();
+	void closeThree();
 	
 	// Finish
 	void finish();						// Call to cause the application to close

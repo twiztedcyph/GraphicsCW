@@ -10,13 +10,15 @@ private:
 	double freq;
 	double xFrame, yFrame;
 	double xFrameCount, yFrameCount;
+	double scale;
 	GLuint explosionTextureID;
 	
 public:
 	bool finished;
 	Explosion();
-	Explosion(double exploX, double exploY, GLuint* explosionTextureID);
-	void setExplosion(double exploX, double exploY, GLuint* explosionTextureID);
+	Explosion(double exploX, double exploY, double scale, GLuint* explosionTextureID);
+	void setExplosion(double exploX, double exploY, double scale, GLuint* explosionTextureID);
+	void setExplosionTexture(GLuint* explosionTextureID);
 	void updateExplosion(double deltaT);
 	void drawExplosion();
 	~Explosion();

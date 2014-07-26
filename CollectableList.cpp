@@ -1,8 +1,9 @@
 #include "CollectableList.h"
-
+#include <iostream>
 
 CollectableList::CollectableList()
 {
+	oldSize = 0;
 }
 
 

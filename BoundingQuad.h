@@ -1,13 +1,16 @@
 #pragma once
 #include "Point.h"
 
+#include <vector>
+
 class BoundingQuad
 {
 private:
 	int numberOfPoints;
+
 public:
-	Point* points;
-	Point* pointsN;
+	std::vector<Point> points, pointsN;
+
 	BoundingQuad();
 	BoundingQuad(int numberOfPoints);
 	BoundingQuad(Point& p1, Point& p2, Point& p3, Point& p4);

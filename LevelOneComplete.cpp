@@ -9,29 +9,29 @@
 #include "SOIL.h"
 
 #include "OpenGLApplication.h"			// Needed for OpenGLApplication method calls
-#include "EndScreenActivity.h"
+#include "LevelOneComplete.h"
 
 
 
-EndScreenActivity::EndScreenActivity(OpenGLApplication *app)
-	: Activity(app)
+LevelOneComplete::LevelOneComplete(OpenGLApplication *app)
+: Activity(app)
 {
 }
 
 
-void EndScreenActivity::initialise()
+void LevelOneComplete::initialise()
 {
 	// Initialise the activity; called at application start up
 
 	// Load the start screen image as a texture using the SOIL library
-	textureID = SOIL_load_OGL_texture("sprites/end_screen.png",			// filename
+	textureID = SOIL_load_OGL_texture("sprites/lvlOneComplete.png",			// filename
 		SOIL_LOAD_AUTO,													// 
 		SOIL_CREATE_NEW_ID,												// ask SOIL to create a new OpenGL texture ID for us
 		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);						// generate Mipmaps and invert Y
 }
 
 
-void EndScreenActivity::shutdown()
+void LevelOneComplete::shutdown()
 {
 	// Shutdown the activity; called at application finish
 
@@ -46,17 +46,17 @@ void EndScreenActivity::shutdown()
 * Put your application/game code here
 *
 */
-void EndScreenActivity::onSwitchIn()
+void LevelOneComplete::onSwitchIn()
 {
 	// Activity switched in
 
-	glClearColor(0.0,0.0,0.0,0.0);						//sets the clear colour to black
+	glClearColor(0.0, 0.0, 0.0, 0.0);						//sets the clear colour to black
 }
 
-void EndScreenActivity::onReshape(int width, int height)
+void LevelOneComplete::onReshape(int width, int height)
 {
 	// Screen resized
-	glViewport(0,0,width,height);						// Reset The Current Viewport
+	glViewport(0, 0, width, height);						// Reset The Current Viewport
 
 	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
 	glLoadIdentity();									// Reset The Projection Matrix
@@ -68,13 +68,13 @@ void EndScreenActivity::onReshape(int width, int height)
 	glLoadIdentity();									// Reset The Modelview Matrix
 }
 
-void EndScreenActivity::render()
+void LevelOneComplete::render()
 {
 	// OpenGL render calls go in this method
 
 	// Clear color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+
 	// Identity matrix
 	glLoadIdentity();
 
@@ -83,7 +83,6 @@ void EndScreenActivity::render()
 	// Enable 2D texturing
 	glEnable(GL_TEXTURE_2D);
 
-	// Use two triangles to make a square, with texture co-ordinates for each vertex
 	glBegin(GL_POLYGON);
 	glTexCoord2f(0, 0);
 	glVertex2f(-1.35, -1);
@@ -106,7 +105,7 @@ void EndScreenActivity::render()
 
 
 
-void EndScreenActivity::onKeyUp(int key)										// Called when key released
+void LevelOneComplete::onKeyUp(int key)										// Called when key released
 {
 	// Key released
 
@@ -114,14 +113,11 @@ void EndScreenActivity::onKeyUp(int key)										// Called when key released
 	// That way the next activity starts with the space key NOT pressed
 	if (key == ' ')
 	{
-		// Space; finish the application
-		
-		app->gameOne->initialise();
-		app->startScreen->initialise();
-		app->setCurrentActivity(app->startScreen);
+		app->gameTwo->initialise();
+		app->setCurrentActivity(app->gameTwo);
 	}
 	if (key == 'y')
 	{
-		
+
 	}
 }

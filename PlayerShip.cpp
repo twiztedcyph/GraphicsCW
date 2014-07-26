@@ -38,10 +38,12 @@ PlayerShip::PlayerShip(double x, double y)
 	this->flash = 0;
 	this->flashCount = 0;
 	this->shipHP = 100;
+	this->lives = 3;
 	this->collected = 0;
 	this->killed = 0;
 	this->box = BoundingQuad(5);
 	this->playerMinTransDist = Point(0, 0);
+	this->ammoLeft = 10;
 
 	//Reference points.
 	box.points[0].setPoint(-1, -2);
@@ -75,6 +77,12 @@ bool PlayerShip::isReadyToFire()
 		return true;
 	}
 	return false;
+}
+
+void PlayerShip::setPlayerPos(double xPos, double yPos)
+{
+	this->playerX = xPos;
+	this->playerY = yPos;
 }
 
 void PlayerShip::setEnemyList(EnemyList* enemyShipListRef)
@@ -119,7 +127,15 @@ void PlayerShip::playerUpdate(double deltaT)
 		if (Collision().isIntersect(this->box, Point(playerX, playerY), eBullet->box, Point(eBullet->getX(), eBullet->getY()), 28,bulletMinTransDist))
 		{
 			gotHit = true;
-			shipHP--;
+			if (shipHP > 0)
+			{
+				shipHP -= 10;
+			}
+			else
+			{
+				shipHP = 100;
+				lives--;
+			}
 			//std::cout << "LIFE LEFT: " << shipHP << std::endl;
 			eBullet->destroy();
 		}
@@ -130,14 +146,29 @@ void PlayerShip::playerUpdate(double deltaT)
 	{
 		CompShip* eShip = enemyShipListRef->getShip(i);
 		Point enemyMinTransDist;
-		if (Collision().isIntersect(this->box, Point(playerX, playerY), eShip->box, Point(eShip->getCompX(), eShip->getCompY()), 28, enemyMinTransDist))
+		if (Collision().isIntersect(this->box, Point(playerX, playerY), eShip->box, Point(eShip->getCompX(), eShip->getCompY()), 38, enemyMinTransDist))
 		{
 			gotHit = true;
-			shipHP-= 0.1;
-			//std::cout << "LIFE LEFT: " << shipHP << std::endl;
-
-			playerMinTransDist = Point(enemyMinTransDist.pointX * 0.1, enemyMinTransDist.pointY * 0.1);
-			eShip->setMinTransDist(-enemyMinTransDist.pointX * 0.9, -enemyMinTransDist.pointY * 0.9);
+			if (shipHP > 0)
+			{
+				shipHP -= 0.1;
+			}
+			else
+			{
+				shipHP = 100;
+				lives--;
+			}
+			
+			if (eShip->enemyType == 0)
+			{
+				playerMinTransDist = Point(enemyMinTransDist.pointX * 0.1, enemyMinTransDist.pointY * 0.1);
+				eShip->setMinTransDist(-enemyMinTransDist.pointX * 0.9, -enemyMinTransDist.pointY * 0.9);
+			}
+			else
+			{
+				playerMinTransDist = Point(enemyMinTransDist.pointX, enemyMinTransDist.pointY);
+				playerSpeedDown(deltaT * 2.5);
+			}
 		}
 	}
 
@@ -153,7 +184,15 @@ void PlayerShip::playerUpdate(double deltaT)
 			{
 				this->setMinTransDist(minTransDist.pointX, minTransDist.pointY);
 				showHit(deltaT);
-				shipHP -= 0.1;
+				if (shipHP > 0)
+				{
+					shipHP -= 0.1;
+				}
+				else
+				{
+					shipHP = 100;
+					lives--;
+				}
 				//std::cout << "LIFE LEFT: " << shipHP << std::endl;
 				playerSpeedDown(deltaT * 2.5);
 			}
@@ -189,8 +228,13 @@ void PlayerShip::playerUpdate(double deltaT)
 		{
 			collectable->collected = true;
 			collected++;
-			PlaySound("sounds/collect.wav", NULL, SND_ASYNC);
+			ammoLeft += 2;
+			std::cout << "Collected: " << collected << std::endl;
 		}
+	}
+	if (drawTexture == *playerHitTextureID)
+	{
+		showHit(deltaT);
 	}
 }
 
@@ -240,6 +284,16 @@ void PlayerShip::playerRotateRight(double deltaT)
 	playerRotation -= PLAYER_ROTATION_SPEED * deltaT * 40;
 }
 
+void PlayerShip::playerMoveLeft(double deltaT)
+{
+	playerX -= PLAYER_MOVEMENT_SPEED * deltaT;
+}
+
+void PlayerShip::playerMoveRight(double deltaT)
+{
+	playerX += PLAYER_MOVEMENT_SPEED * deltaT;
+}
+
 void PlayerShip::setMinTransDist(double xTrans, double yTrans)
 {
 	playerMinTransDist = Point(xTrans, yTrans);
@@ -275,7 +329,6 @@ void PlayerShip::playerDraw()
 	// Enable 2D texturing
 	glEnable(GL_TEXTURE_2D);
 
-	// Use two triangles to make a square, with texture co-ordinates for each vertex
 	glBegin(GL_POLYGON);
 	glColor3f(1.0f, 1.0f, 1.0f);
 
@@ -351,5 +404,30 @@ void PlayerShip::showHit(double deltaT)
 		gotHit = false;
 		flashCount = 0;
 	}
-	drawTexture = *playerTextureID;
+}
+
+double PlayerShip::getPlayerHP()
+{
+	return this->shipHP;
+}
+
+int PlayerShip::getPlayerLives()
+{
+	return this->lives;
+}
+
+bool PlayerShip::completedLevelOne()
+{
+	return ((this->collected == 10) && playerX > 95 && playerY > 6.5);
+}
+
+bool PlayerShip::completedLevelTwo()
+{
+	return ((this->collected > 0) && playerY > 6.7);
+}
+
+bool PlayerShip::completedLevelThree()
+{
+	//place holder
+	return false;
 }

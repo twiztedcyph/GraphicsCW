@@ -14,7 +14,7 @@ private:
 public:
 	BoundingQuad box;
 	Asteroid(double roidX, double roidY, GLuint* asteroidTextureID);
-	~Asteroid();
+	Asteroid(double roidX, double roidY, double roidSpeed, GLuint* asteroidTextureID);
 
 	void setRoidPos(double roidX, double roidY);
 	void setRoidSpeed(double roidSpeed);

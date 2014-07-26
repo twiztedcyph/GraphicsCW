@@ -3,24 +3,25 @@
 #include <iostream>
 #include <iomanip>
 
+
 BoundingQuad::BoundingQuad()
 {
-	points = new Point[4];
-	pointsN = new Point[4];
+	points.resize(4);
+	pointsN.resize(4);
 	this->numberOfPoints = 4;
 }
 
 BoundingQuad::BoundingQuad(int numberOfPoints)
 {
-	points = new Point[numberOfPoints];
-	pointsN = new Point[numberOfPoints];
+	points.resize(numberOfPoints);
+	pointsN.resize(numberOfPoints);
 	this->numberOfPoints = numberOfPoints;
 }
 
 BoundingQuad::BoundingQuad(Point& p1, Point& p2, Point& p3, Point& p4)
 {
-	points = new Point[4];
-	pointsN = new Point[4];
+	points.resize(4);
+	pointsN.resize(4);
 	this->numberOfPoints = 4;
 	pointsN[0] = p1;
 	pointsN[1] = p2;
@@ -94,3 +95,4 @@ void BoundingQuad::getMinMax(double* xMin, double* xMax, double* yMin, double* y
 	*yMin = yS;
 	*yMax = yL;
 }
+

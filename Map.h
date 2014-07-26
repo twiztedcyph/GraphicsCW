@@ -14,6 +14,7 @@ class Map
 {
 private:
 	double xStart, yStart;
+	unsigned int stage;
 	GLuint* asteroidTextureId, * enemyTextureID, * collectableTextureID;
 	EnemyList* enemyList;
 	CollectableList* collectableList;
@@ -32,6 +33,8 @@ public:
 	
 	void addAsteroid(Asteroid newAsteroid);
 	
-	void makeField();
+	void makeFieldOne();
+	void makeFieldTwo();
+	void makeFieldThree();
 };
 
